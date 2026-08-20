@@ -42,7 +42,7 @@ func Unpack(input string) (string, error) {
 		}
 
 		sb.WriteString(string(symbol))
-		i += 1
+		i++
 	}
 
 	return sb.String(), nil

@@ -29,10 +29,7 @@ func Top10(input string) []string {
 	}
 
 	slices.SortFunc(uniqueWords, func(a, b string) int {
-		freqA := freqs[a]
-		freqB := freqs[b]
-
-		if r := freqB - freqA; r != 0 {
+		if r := freqs[b] - freqs[a]; r != 0 {
 			return r
 		}
 

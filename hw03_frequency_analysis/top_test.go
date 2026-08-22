@@ -89,4 +89,9 @@ func TestTop10(t *testing.T) {
 		expected := []string{"a", "b", "c"}
 		require.Equal(t, expected, Top10("c b a c b a"))
 	})
+
+	t.Run("punct words test", func(t *testing.T) {
+		expected := []string{"??", ">>>", "-----", "!!"}
+		require.Equal(t, expected, Top10("----- ----- >>> >>> >>> ?? ?? ?? ?? !! - , ! ."))
+	})
 }

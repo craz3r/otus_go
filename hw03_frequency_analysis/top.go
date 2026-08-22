@@ -15,7 +15,22 @@ func Top10(input string) []string {
 	freqs := make(map[string]int)
 
 	for _, word := range words {
-		if word := strings.TrimFunc(strings.ToLower(word), func(r rune) bool {
+		word = strings.ToLower(word)
+
+		isPunctWord := true
+
+		if letter := strings.ContainsFunc(word, func(r rune) bool {
+			return !unicode.IsPunct(r) && !unicode.IsSymbol(r)
+		}); letter {
+			isPunctWord = false
+		}
+
+		if isPunctWord && len(word) > 1 {
+			freqs[word]++
+			continue
+		}
+
+		if word := strings.TrimFunc(word, func(r rune) bool {
 			return unicode.IsPunct(r) || unicode.IsSymbol(r)
 		}); word != "" {
 			freqs[word]++

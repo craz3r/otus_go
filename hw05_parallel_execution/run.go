@@ -43,7 +43,11 @@ func Run(tasks []Task, n, m int) error {
 					}
 					err := task()
 					if err != nil {
-						errorsCh <- err
+						select {
+						case <-stopCh:
+							return
+						case errorsCh <- err:
+						}
 					}
 				}
 			}
@@ -51,7 +55,7 @@ func Run(tasks []Task, n, m int) error {
 	}
 
 	go func() {
-		wg.Wait()
+
 		close(errorsCh)
 	}()
 
@@ -65,6 +69,8 @@ func Run(tasks []Task, n, m int) error {
 			break
 		}
 	}
+
+	wg.Wait()
 
 	if errorsCount >= m {
 		return ErrErrorsLimitExceeded

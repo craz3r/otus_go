@@ -15,64 +15,44 @@ func Run(tasks []Task, n, m int) error {
 		return ErrErrorsLimitExceeded
 	}
 
-	tasksCh := make(chan Task, len(tasks))
-	errorsCh := make(chan error, len(tasks))
-	stopCh := make(chan struct{})
+	tasksCh := make(chan Task)
+	var mu sync.Mutex
+	var wg sync.WaitGroup
 
-	wg := sync.WaitGroup{}
-
-	go func() {
-		for _, task := range tasks {
-			tasksCh <- task
-		}
-		close(tasksCh)
-	}()
+	errCount := 0
 
 	for i := 0; i < n; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 
-			for {
-				select {
-				case <-stopCh:
-					return
-				case task, ok := <-tasksCh:
-					if !ok {
-						return
-					}
-					err := task()
-					if err != nil {
-						select {
-						case <-stopCh:
-							return
-						case errorsCh <- err:
-						}
-					}
+			for task := range tasksCh {
+				if err := task(); err != nil {
+					mu.Lock()
+					errCount++
+					mu.Unlock()
 				}
 			}
 		}()
 	}
 
-	go func() {
-
-		close(errorsCh)
-	}()
-
-	errorsCount := 0
-
-	for range errorsCh {
-		errorsCount++
-
-		if errorsCount >= m {
-			close(stopCh)
+	for _, task := range tasks {
+		mu.Lock()
+		exceeded := errCount >= m
+		mu.Unlock()
+		if exceeded {
 			break
 		}
+		tasksCh <- task
 	}
-
+	close(tasksCh)
 	wg.Wait()
 
-	if errorsCount >= m {
+	mu.Lock()
+	exceeded := errCount >= m
+	mu.Unlock()
+
+	if exceeded {
 		return ErrErrorsLimitExceeded
 	}
 

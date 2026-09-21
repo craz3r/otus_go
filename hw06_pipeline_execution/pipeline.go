@@ -38,6 +38,7 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 			go func(src Out) {
 				<-done
 				for range src {
+					// Вычитываем данные для предотвращения дедлока
 				}
 			}(stageOut)
 		}

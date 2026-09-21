@@ -17,17 +17,17 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 		go func(prevOut In, currentIn Bi) {
 			defer close(currentIn)
 
-			for val := range prevOut {
+			for {
 				select {
 				case <-done:
 					return
-				default:
-				}
 
-				select {
-				case <-done:
-					return
-				case currentIn <- val:
+				case val, ok := <-prevOut:
+					if !ok {
+						return
+					}
+
+					currentIn <- val
 				}
 			}
 		}(currentIn, stageIn)

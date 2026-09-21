@@ -29,7 +29,6 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 					if !ok {
 						return
 					}
-
 					dst <- val
 				}
 			}

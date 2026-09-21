@@ -37,8 +37,10 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 		if done != nil {
 			go func(src Out) {
 				<-done
-				for range src {
-					// Вычитываем данные для предотвращения дедлока
+				for {
+					if _, ok := <-src; !ok {
+						break
+					}
 				}
 			}(stageOut)
 		}
